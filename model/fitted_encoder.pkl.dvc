@@ -1,0 +1,5 @@
+outs:
+- md5: 9e031e77fe1ecfada09f89246d53db42
+  size: 2002
+  hash: md5
+  path: fitted_encoder.pkl
