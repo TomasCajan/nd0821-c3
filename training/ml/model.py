@@ -239,15 +239,6 @@ def create_model_card(model_path, train_data, test_data, metrics, output_path="m
     with open(model_path, 'rb') as file:
         model = pickle.load(file)
     
-    # Get info of train and test data
-    train_buffer = io.StringIO()
-    train_data.info(buf=train_buffer)
-    train_data_info = train_buffer.getvalue()
-
-    test_buffer = io.StringIO()
-    test_data.info(buf=test_buffer)
-    test_data_info = test_buffer.getvalue()
-
     # Extract metrics
     precision, recall, fbeta = metrics
 
@@ -257,7 +248,8 @@ def create_model_card(model_path, train_data, test_data, metrics, output_path="m
     ---
 
     ## Model Details
-    This is a Logistic Regression model trained on the census dataset. It was trained using a k-fold cross-validated grid search and comes with the following setup:  {model}
+    This is a Logistic Regression model trained on the census dataset.
+    It was trained using a k-fold cross-validated grid search and comes with the following setup:  {model}
 
     ---
 
@@ -267,15 +259,16 @@ def create_model_card(model_path, train_data, test_data, metrics, output_path="m
     ---
 
     ## Training Data
-    Model was trained on the following training dataset:  
-    {train_data_info}
+    Model was trained on the census+income dataset publicly available here:
+    https://archive.ics.uci.edu/dataset/20/census+income
+    Specifically on 80% of the dataset, having exact shape of {train_data.shape}
+    
 
     ---
 
     ## Evaluation Data
-    Model was evaluated on the following test dataset kept away from the train data:  
-    {test_data_info}
-
+    Model was evaluated on the remaining 20% of the dataset mentioned above, specifically : {test_data.shape}
+    
     ---
 
     ## Metrics
@@ -287,7 +280,7 @@ def create_model_card(model_path, train_data, test_data, metrics, output_path="m
     ---
 
     ## Ethical Considerations
-    Model has tendency to positively discriminate white and Asian people.
+    Model unfortunately has tendency to positively discriminate white and Asian people.
 
     ---
 
