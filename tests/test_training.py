@@ -13,7 +13,7 @@ from ml.data import process_data
 from ml.model import train_model, compute_model_metrics
 
 # Clean data
-data = pd.read_csv("../data/census.csv")
+data = pd.read_csv(os.path.join(os.path.dirname(__file__), '..', 'data', 'census.csv'))
 data.columns = data.columns.str.strip()
 data = data.applymap(lambda x: x.strip() if isinstance(x, str) else x)
 
