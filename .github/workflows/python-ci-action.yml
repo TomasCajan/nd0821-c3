@@ -33,7 +33,7 @@ jobs:
 
     - name: Pull data with DVC
       run: |
-        dvc remote add -d s3remote s3://my_custom_name
+        dvc remote add -d s3remote s3://tomsprojectbucket
         dvc pull
 
     - name: Lint with flake8
