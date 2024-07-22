@@ -1,0 +1,20 @@
+Metrics for race = White:
+  Precision: 0.7265
+  Recall: 0.2677
+  F1 Score: 0.3913
+Metrics for race = Asian-Pac-Islander:
+  Precision: 0.7108
+  Recall: 0.2694
+  F1 Score: 0.3907
+Metrics for race = Black:
+  Precision: 0.6429
+  Recall: 0.2500
+  F1 Score: 0.3600
+Metrics for race = Other:
+  Precision: 0.6154
+  Recall: 0.4000
+  F1 Score: 0.4848
+Metrics for race = Amer-Indian-Eskimo:
+  Precision: 0.5000
+  Recall: 0.3448
+  F1 Score: 0.4082
