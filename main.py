@@ -14,18 +14,46 @@ app = FastAPI(
     version="1.0.0"
 )
 
-model_path = os.path.join(os.path.dirname(__file__), "model", "trained_model.pkl")
-encoder_path = os.path.join(os.path.dirname(__file__), "model", "fitted_encoder.pkl")
-binarizer_path = os.path.join(os.path.dirname(__file__), "model", "fitted_binarizer.pkl")
+#model_path = os.path.join(os.path.dirname(__file__), "model", "trained_model.pkl")
+#encoder_path = os.path.join(os.path.dirname(__file__), "model", "fitted_encoder.pkl")
+#binarizer_path = os.path.join(os.path.dirname(__file__), "model", "fitted_binarizer.pkl")
 
-with open(model_path, 'rb') as file:
-    model = pickle.load(file)
+#with open(model_path, 'rb') as file:
+#    model = pickle.load(file)
 
-with open(encoder_path, 'rb') as file:
-    encoder = pickle.load(file)
+#with open(encoder_path, 'rb') as file:
+#    encoder = pickle.load(file)
 
-with open(binarizer_path, 'rb') as file:
-    lb = pickle.load(file)
+#with open(binarizer_path, 'rb') as file:
+#    lb = pickle.load(file)
+
+def load_file(paths):
+    for path in paths:
+        try:
+            with open(path, 'rb') as file:
+                return pickle.load(file)
+        except FileNotFoundError:
+            print(f"File not found at: {path}")
+    raise FileNotFoundError(f"File not found in any of the provided paths: {paths}")
+
+model_paths = [
+    os.path.join(os.path.dirname(__file__), "model", "trained_model.pkl"),
+    os.path.join("/app", "model", "trained_model.pkl")
+]
+
+encoder_paths = [
+    os.path.join(os.path.dirname(__file__), "model", "fitted_encoder.pkl"),
+    os.path.join("/app", "model", "fitted_encoder.pkl")
+]
+
+binarizer_paths = [
+    os.path.join(os.path.dirname(__file__), "model", "fitted_binarizer.pkl"),
+    os.path.join("/app", "model", "fitted_binarizer.pkl")
+]
+
+model = load_file(model_paths)
+encoder = load_file(encoder_paths)
+lb = load_file(binarizer_paths)
 
 class InferenceData(BaseModel):
     data: List[Dict[str, Any]]
