@@ -28,47 +28,36 @@ app = FastAPI(
 #with open(binarizer_path, 'rb') as file:
 #    lb = pickle.load(file)
 
-def download_from_s3(bucket_name, key, download_path):
-    s3 = boto3.client('s3')
-    s3.download_file(bucket_name, key, download_path)
+def load_file(paths):
+    for path in paths:
+        try:
+            with open(path, 'rb') as file:
+                print(f"Successfully loaded file from: {path}")
+                return pickle.load(file)
+        except FileNotFoundError:
+            print(f"File not found at: {path}")
+    raise FileNotFoundError(f"File not found in any of the provided paths: {paths}")
 
-# Define S3 bucket and keys
-bucket_name = os.getenv('S3_BUCKET_NAME')
-model_key = 'models/trained_model.pkl'
-encoder_key = 'models/fitted_encoder.pkl'
-binarizer_key = 'models/fitted_binarizer.pkl'
+# Define potential paths for the model, encoder, and binarizer
+model_paths = [
+    os.path.join(os.path.dirname(__file__), "model", "trained_model.pkl"),
+    os.path.join("/app", "model", "trained_model.pkl")
+]
 
-# Define local paths
-model_path = os.path.join(os.path.dirname(__file__), "model", "trained_model.pkl")
-encoder_path = os.path.join(os.path.dirname(__file__), "model", "fitted_encoder.pkl")
-binarizer_path = os.path.join(os.path.dirname(__file__), "model", "fitted_binarizer.pkl")
+encoder_paths = [
+    os.path.join(os.path.dirname(__file__), "model", "fitted_encoder.pkl"),
+    os.path.join("/app", "model", "fitted_encoder.pkl")
+]
 
-# Ensure model directory exists
-os.makedirs(os.path.dirname(model_path), exist_ok=True)
-
-# Download files from S3 if they don't exist locally
-if not os.path.exists(model_path):
-    print(f"Downloading {model_key} from S3 to {model_path}")
-    download_from_s3(bucket_name, model_key, model_path)
-
-if not os.path.exists(encoder_path):
-    print(f"Downloading {encoder_key} from S3 to {encoder_path}")
-    download_from_s3(bucket_name, encoder_key, encoder_path)
-
-if not os.path.exists(binarizer_path):
-    print(f"Downloading {binarizer_key} from S3 to {binarizer_path}")
-    download_from_s3(bucket_name, binarizer_key, binarizer_path)
+binarizer_paths = [
+    os.path.join(os.path.dirname(__file__), "model", "fitted_binarizer.pkl"),
+    os.path.join("/app", "model", "fitted_binarizer.pkl")
+]
 
 # Load model, encoder, and binarizer
-with open(model_path, 'rb') as file:
-    model = pickle.load(file)
-
-with open(encoder_path, 'rb') as file:
-    encoder = pickle.load(file)
-
-with open(binarizer_path, 'rb') as file:
-    lb = pickle.load(file)
-
+model = load_file(model_paths)
+encoder = load_file(encoder_paths)
+lb = load_file(binarizer_paths)
 
 class InferenceData(BaseModel):
     data: List[Dict[str, Any]]
