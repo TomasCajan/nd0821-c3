@@ -7,6 +7,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 from typing import List, Dict, Any
 import uvicorn
+from io import BytesIO
 from training.ml.data import process_data
 
 app = FastAPI(
@@ -28,36 +29,66 @@ app = FastAPI(
 #with open(binarizer_path, 'rb') as file:
 #    lb = pickle.load(file)
 
-def load_file(paths):
-    for path in paths:
-        try:
-            with open(path, 'rb') as file:
-                print(f"Successfully loaded file from: {path}")
-                return pickle.load(file)
-        except FileNotFoundError:
-            print(f"File not found at: {path}")
-    raise FileNotFoundError(f"File not found in any of the provided paths: {paths}")
+#try2
+
+#def load_file(paths):
+#    for path in paths:
+#        try:
+#            with open(path, 'rb') as file:
+#                print(f"Successfully loaded file from: {path}")
+#                return pickle.load(file)
+#        except FileNotFoundError:
+#            print(f"File not found at: {path}")
+#    raise FileNotFoundError(f"File not found in any of the provided paths: {paths}")
 
 # Define potential paths for the model, encoder, and binarizer
-model_paths = [
-    os.path.join(os.path.dirname(__file__), "model", "trained_model.pkl"),
-    os.path.join("/app", "model", "trained_model.pkl")
-]
+#model_paths = [
+#    os.path.join(os.path.dirname(__file__), "model", "trained_model.pkl"),
+#    os.path.join("/app", "model", "trained_model.pkl")
+#]
 
-encoder_paths = [
-    os.path.join(os.path.dirname(__file__), "model", "fitted_encoder.pkl"),
-    os.path.join("/app", "model", "fitted_encoder.pkl")
-]
-
-binarizer_paths = [
-    os.path.join(os.path.dirname(__file__), "model", "fitted_binarizer.pkl"),
-    os.path.join("/app", "model", "fitted_binarizer.pkl")
-]
+#encoder_paths = [
+#    os.path.join(os.path.dirname(__file__), "model", "fitted_encoder.pkl"),
+#    os.path.join("/app", "model", "fitted_encoder.pkl")
+#]
+#
+#binarizer_paths = [
+#    os.path.join(os.path.dirname(__file__), "model", "fitted_binarizer.pkl"),
+#    os.path.join("/app", "model", "fitted_binarizer.pkl")
+#]#
 
 # Load model, encoder, and binarizer
-model = load_file(model_paths)
-encoder = load_file(encoder_paths)
-lb = load_file(binarizer_paths)
+#model = load_file(model_paths)
+#encoder = load_file(encoder_paths)
+#lb = load_file(binarizer_paths)
+
+def load_from_s3(bucket_name, key):
+    s3 = boto3.client('s3')
+    try:
+        print(f"Loading {key} from S3 bucket {bucket_name}")
+        file_obj = s3.get_object(Bucket=bucket_name, Key=key)
+        return pickle.load(BytesIO(file_obj['Body'].read()))
+    except boto3.exceptions.S3UploadFailedError:
+        raise HTTPException(status_code=500, detail="Failed to download file from S3")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Define S3 bucket and keys
+bucket_name = os.getenv('S3_BUCKET_NAME')
+model_key = "trained_model.pkl"
+encoder_key = "model/fitted_encoder.pkl"
+binarizer_key = "model/fitted_binarizer.pkl"
+
+# Load model files into memory
+try:
+    model = load_from_s3(bucket_name, model_key)
+    encoder = load_from_s3(bucket_name, encoder_key)
+    lb = load_from_s3(bucket_name, binarizer_key)
+except Exception as e:
+    raise HTTPException(status_code=500, detail=str(e))
+
+
+
 
 class InferenceData(BaseModel):
     data: List[Dict[str, Any]]
