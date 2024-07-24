@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import pickle
 import boto3
+import yaml
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 from typing import List, Dict, Any
@@ -62,30 +63,45 @@ app = FastAPI(
 #encoder = load_file(encoder_paths)
 #lb = load_file(binarizer_paths)
 
-def load_from_s3(bucket_name, key):
-    s3 = boto3.client('s3')
+# Define AWS credentials and S3 bucket details
+aws_access_key_id = os.getenv('AWS_ACCESS_KEY_ID')
+aws_secret_access_key = os.getenv('AWS_SECRET_ACCESS_KEY')
+s3_bucket_name = 'tomsprojectbucket'
+
+# Initialize a session using Amazon S3
+s3 = boto3.client('s3', aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
+
+# Function to download a file from S3 and load it
+def download_from_s3(bucket_name, key, download_path):
     try:
-        print(f"Loading {key} from S3 bucket {bucket_name}")
-        file_obj = s3.get_object(Bucket=bucket_name, Key=key)
-        return pickle.load(BytesIO(file_obj['Body'].read()))
-    except boto3.exceptions.S3UploadFailedError:
-        raise HTTPException(status_code=500, detail="Failed to download file from S3")
+        s3.download_file(bucket_name, key, download_path)
+        print(f"Successfully downloaded {key} from S3 to {download_path}")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise RuntimeError(f"Error downloading {key} from S3: {e}")
 
-# Define S3 bucket and keys
-bucket_name = os.getenv('S3_BUCKET_NAME')
-model_key = "trained_model.pkl"
-encoder_key = "model/fitted_encoder.pkl"
-binarizer_key = "model/fitted_binarizer.pkl"
+# Function to get S3 key from DVC file
+def get_s3_key_from_dvc_file(dvc_file_path):
+    with open(dvc_file_path, 'r') as file:
+        dvc_data = yaml.safe_load(file)
+        md5_hash = dvc_data['outs'][0]['md5']
+        s3_key = f'files/md5/{md5_hash[:2]}/{md5_hash[2:]}'
+        return s3_key
 
-# Load model files into memory
-try:
-    model = load_from_s3(bucket_name, model_key)
-    encoder = load_from_s3(bucket_name, encoder_key)
-    lb = load_from_s3(bucket_name, binarizer_key)
-except Exception as e:
-    raise HTTPException(status_code=500, detail=str(e))
+# Get keys from DVC files
+model_key = get_s3_key_from_dvc_file('model/trained_model.pkl.dvc')
+encoder_key = get_s3_key_from_dvc_file('model/fitted_encoder.pkl.dvc')
+binarizer_key = get_s3_key_from_dvc_file('model/fitted_binarizer.pkl.dvc')
+
+# Download and load the files
+def load_file_from_s3(bucket_name, key):
+    download_path = f'/tmp/{os.path.basename(key)}'
+    download_from_s3(bucket_name, key, download_path)
+    with open(download_path, 'rb') as file:
+        return pickle.load(file)
+
+model = load_file_from_s3(s3_bucket_name, model_key)
+encoder = load_file_from_s3(s3_bucket_name, encoder_key)
+lb = load_file_from_s3(s3_bucket_name, binarizer_key)
 
 
 
