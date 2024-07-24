@@ -80,19 +80,33 @@ def download_from_s3(s3, bucket_name, key):
     except Exception as e:
         print(f"Error downloading {key} from S3: {e}")
         return None
-
-# Function to get S3 key from DVC file
-#def get_s3_key_from_dvc_file(dvc_file_path):
-#    with open(dvc_file_path, 'r') as file:
-#        dvc_data = yaml.safe_load(file)
-#        md5_hash = dvc_data['outs'][0]['md5']
-#        s3_key = f'files/md5/{md5_hash[:2]}/{md5_hash[2:]}'
-#        return s3_key
+    
+# Function to read the DVC file and extract the S3 key
+def get_s3_key_from_dvc(dvc_file_path):
+    with open(dvc_file_path, 'r') as f:
+        dvc_data = yaml.safe_load(f)
+        hash_value = dvc_data['outs'][0]['md5']
+        s3_key = f"files/md5/{hash_value[:2]}/{hash_value[2:]}"
+        return s3_key
+    
+# Detect if running on Heroku
+is_heroku = 'DYNO' in os.environ
 
 # Get keys from DVC files
-model_key = "files/md5/cc/26ee31c12be9df028f09a902254282"
-binarizer_key = "files/md5/2a/e474cfc13b051b7b6091665505b5ba"
-encoder_key = "files/md5/9e/031e77fe1ecfada09f89246d53db42"
+base_path = "app/" if is_heroku else ""
+
+model_dvc_file = os.path.join(base_path, "model", "trained_model.pkl.dvc")
+binarizer_dvc_file = os.path.join(base_path, "model", "fitted_binarizer.pkl.dvc")
+encoder_dvc_file = os.path.join(base_path, "model", "fitted_encoder.pkl.dvc")
+
+model_key = get_s3_key_from_dvc(model_dvc_file)
+binarizer_key = get_s3_key_from_dvc(binarizer_dvc_file)
+encoder_key = get_s3_key_from_dvc(encoder_dvc_file)
+
+# Get keys from DVC files >>>>>>>
+#model_key = "files/md5/cc/26ee31c12be9df028f09a902254282"
+#binarizer_key = "files/md5/2a/e474cfc13b051b7b6091665505b5ba"
+#encoder_key = "files/md5/9e/031e77fe1ecfada09f89246d53db42"
 
 model_data = download_from_s3(s3, bucket_name, model_key)
 binarizer_data = download_from_s3(s3, bucket_name, binarizer_key)
