@@ -23,9 +23,9 @@ This project contains all components of a CI/CD solution.
 ## The actual API
 The project API supports two methods:
 - GET - Greets the user and gives instructions to use the /predict endpoint
-- POST - Accepts JSON structure data to make a prediction. See API documentation at https://tomatheroku-a89b9ce4b37c.herokuapp.com/docs   for info about how query and responses should look like.
+- POST - Accepts JSON structure data to make a prediction.
 
-- Availability - you can find the deployed Application at https://tomatheroku-a89b9ce4b37c.herokuapp.com/  for the sake of evaluation, it will be available only for a couple of days.
+- Availability - Application was deployed to https://tomatheroku-a89b9ce4b37c.herokuapp.com/  for the sake of evaluation, it will be there only shortly to not make much costs.
 
 ## Ownership
 I have created all content in this project except for the scripts data.py and sanitycheck.py, which were created by the Udacity authors as a part of the starter code.
