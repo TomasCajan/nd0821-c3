@@ -1,3 +1,6 @@
+"""
+Note: Run this test session using pytest.
+"""
 import sys
 import os
 import pandas as pd
@@ -12,13 +15,16 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../trai
 from ml.data import process_data
 from ml.model import train_model, compute_model_metrics
 
-# Clean data
 data = pd.read_csv(os.path.join(os.path.dirname(__file__), '..', 'data', 'census.csv'))
 data.columns = data.columns.str.strip()
 data = data.applymap(lambda x: x.strip() if isinstance(x, str) else x)
 
-# Test for process_data
 def test_process_data_types():
+    """
+    Test if the process_data function returns the correct data types.
+    Ensures that the returned X and y are numpy arrays, and the encoder and 
+    label binarizer are instances of OneHotEncoder and LabelBinarizer respectively.
+    """
     categorical_features = [
         "workclass",
         "education",
@@ -43,8 +49,11 @@ def test_process_data_types():
     assert isinstance(encoder, OneHotEncoder), "encoder should be a OneHotEncoder"
     assert isinstance(lb, LabelBinarizer), "lb should be a LabelBinarizer"
 
-# Test for train_model
 def test_train_model():
+    """
+    Test if the train_model function returns a LogisticRegression instance.
+    Ensures that the returned model is an instance of LogisticRegression after training.
+    """
     categorical_features = [
         "workclass",
         "education",
@@ -67,8 +76,11 @@ def test_train_model():
     model = train_model(X, y)
     assert isinstance(model, LogisticRegression), "The model should be a LogisticRegression instance"
 
-# Test for compute_model_metrics
 def test_compute_model_metrics():
+    """
+    Test if the compute_model_metrics function returns a tuple of three floats.
+    Ensures that the returned precision, recall, and fbeta are all floats and not NaN.
+    """
     y_true = np.array([0, 1, 1, 0, 1, 0])
     y_preds = np.array([0, 1, 0, 0, 1, 1])
     
