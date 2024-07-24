@@ -66,42 +66,41 @@ app = FastAPI(
 # Define AWS credentials and S3 bucket details
 aws_access_key_id = os.getenv('AWS_ACCESS_KEY_ID')
 aws_secret_access_key = os.getenv('AWS_SECRET_ACCESS_KEY')
-s3_bucket_name = 'tomsprojectbucket'
+bucket_name = "tomsprojectbucket"
 
 # Initialize a session using Amazon S3
 s3 = boto3.client('s3', aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
 
 # Function to download a file from S3 and load it
-def download_from_s3(bucket_name, key, download_path):
+def download_from_s3(s3, bucket_name, key):
     try:
-        s3.download_file(bucket_name, key, download_path)
-        print(f"Successfully downloaded {key} from S3 to {download_path}")
+        response = s3.get_object(Bucket=bucket_name, Key=key)
+        print(f"Successfully downloaded {key} from S3")
+        return response['Body'].read()
     except Exception as e:
-        raise RuntimeError(f"Error downloading {key} from S3: {e}")
+        print(f"Error downloading {key} from S3: {e}")
+        return None
 
 # Function to get S3 key from DVC file
-def get_s3_key_from_dvc_file(dvc_file_path):
-    with open(dvc_file_path, 'r') as file:
-        dvc_data = yaml.safe_load(file)
-        md5_hash = dvc_data['outs'][0]['md5']
-        s3_key = f'files/md5/{md5_hash[:2]}/{md5_hash[2:]}'
-        return s3_key
+#def get_s3_key_from_dvc_file(dvc_file_path):
+#    with open(dvc_file_path, 'r') as file:
+#        dvc_data = yaml.safe_load(file)
+#        md5_hash = dvc_data['outs'][0]['md5']
+#        s3_key = f'files/md5/{md5_hash[:2]}/{md5_hash[2:]}'
+#        return s3_key
 
 # Get keys from DVC files
-model_key = get_s3_key_from_dvc_file('model/trained_model.pkl.dvc')
-encoder_key = get_s3_key_from_dvc_file('model/fitted_encoder.pkl.dvc')
-binarizer_key = get_s3_key_from_dvc_file('model/fitted_binarizer.pkl.dvc')
+model_key = "files/md5/cc/26ee31c12be9df028f09a902254282"
+binarizer_key = "files/md5/2a/e474cfc13b051b7b6091665505b5ba"
+encoder_key = "files/md5/9e/031e77fe1ecfada09f89246d53db42"
 
-# Download and load the files
-def load_file_from_s3(bucket_name, key):
-    download_path = f'/tmp/{os.path.basename(key)}'
-    download_from_s3(bucket_name, key, download_path)
-    with open(download_path, 'rb') as file:
-        return pickle.load(file)
+model_data = download_from_s3(s3, bucket_name, model_key)
+binarizer_data = download_from_s3(s3, bucket_name, binarizer_key)
+encoder_data = download_from_s3(s3, bucket_name, encoder_key)
 
-model = load_file_from_s3(s3_bucket_name, model_key)
-encoder = load_file_from_s3(s3_bucket_name, encoder_key)
-lb = load_file_from_s3(s3_bucket_name, binarizer_key)
+model = pickle.loads(model_data)
+encoder = pickle.loads(encoder_data)
+lb = pickle.loads(binarizer_data)
 
 
 
