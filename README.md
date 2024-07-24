@@ -1,25 +1,27 @@
-# Codename nd0821-c3 : a Udacity capstone project in MLOps Nanodegree.
+## Codename nd0821-c3 : a Udacity capstone project in MLOps Nanodegree.
 
 This is https://github.com/TomasCajan/nd0821-c3
 
-Welcome to my solution of predicting the Salary Category variable in Census Income dataset.
-This is a comprehensive end-to-end CI/CD pipeline unlike any I have built before.
+Welcome to my solution of predicting the "Salary" Category variable in Census Income dataset.
+This is an end-to-end CI/CD pipeline using a logistic regression classifier along with many other features.
 While I spent way more time on creating it than I will ever admit and lost temper multiple times during that (Damn you s3!) it was an absolutely rewarding experience. I hardly ever learned so many different things at such a short time.
 I did this capstone as the last in my Nanodegree progress and it was definitely a good choice, as it was by far the most advanced one out there.
 
+The dataset is available here : https://archive.ics.uci.edu/dataset/20/census+income
+
 ## Features
 
-This project contains several components of the whole CI/CD solution.
-- Codebase - scripts for training and saving of model and associated encoders, validation of models, writing model card(s). 
+This project contains all components of a CI/CD solution.
+- Codebase - scripts for training and saving of model and associated encoders, validation of models, writing model card. 
 - Inference script - prediction functionality wrapped in FastAPI, serving using the GET and POST method to greet the user or serve the predictions
 - Tests - there are two test scripts - one for ML training functions and for the API, to make sure everything works as expected.
 - Tracking code on GitHub
 - Tracking data with DVC on AWS S3 bucket
-- Automated GitHub Actions - CI of the project is made using GitHub Actions, where pytest and flake8 check the code first, only then it is pushed. Data and models are allways fetched from AWS S3.
+- Automated GitHub Actions - CI of the project is made using GitHub Actions, where pytest and flake8 check the code first, only then it is allowed to the repo. Data and models are allways fetched from AWS S3.
 - Automated Deployment on HEROKU - HEROKU account is linked to GitHub to wait for GitHub CI to pass, only then it deploys on the HEROKU platform.
 
 ## The actual API
-There are two methods at this API
+The project API supports two methods:
 - GET - Greets the user and gives instructions to use the /predict endpoint
 - POST - Accepts JSON structure data to make a prediction. See API documentation at https://tomatheroku-a89b9ce4b37c.herokuapp.com/docs   for info about how query and responses should look like.
 
