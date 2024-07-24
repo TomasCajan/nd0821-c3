@@ -93,7 +93,7 @@ def get_s3_key_from_dvc(dvc_file_path):
 is_heroku = 'DYNO' in os.environ
 
 # Get keys from DVC files
-base_path = "app/" if is_heroku else ""
+base_path = "/app/" if is_heroku else ""
 
 model_dvc_file = os.path.join(base_path, "model", "trained_model.pkl.dvc")
 binarizer_dvc_file = os.path.join(base_path, "model", "fitted_binarizer.pkl.dvc")
